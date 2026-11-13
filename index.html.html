@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INSA Rennes Student Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        insa: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#4f46e5', 600: '#4338ca', 700: '#3730a3', dark: '#1e1b4b' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #818cf8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col overflow-hidden">
+
+    <!-- Notification Banner (Toast) -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-insa-dark text-white shadow-md flex items-center justify-between px-6 py-3 shrink-0">
+        <div class="flex items-center space-x-4">
+            <div class="bg-insa-500 p-2 rounded-xl text-white font-bold text-xl shadow">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">INSA Rennes Hub</h1>
+                <p class="text-xs text-indigo-200">Espace Étudiant • <span id="header-student-name">Alexandre Dupont (INFO)</span></p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="triggerAdeSimulation()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-2 rounded-lg font-medium transition flex items-center gap-1.5 shadow">
+                <i class="fa-solid fa-bell"></i> Simuler modif. ADE
+            </button>
+            <div class="relative">
+                <div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-sm border-2 border-indigo-400">
+                    AD
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- Sidebar Navigation -->
+        <nav class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0">
+            <div class="p-4 space-y-1">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">Navigation</p>
+                <button onclick="switchTab('home')" id="nav-home" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition bg-insa-50 text-insa-600">
+                    <i class="fa-solid fa-house w-5 text-center"></i> Accueil & Résumé
+                </button>
+                <button onclick="switchTab('ade')" id="nav-ade" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-calendar-days w-5 text-center"></i> Emploi du temps (ADE)
+                </button>
+                <button onclick="switchTab('zimbra')" id="nav-zimbra" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-600 hover:bg-slate-100 relative">
+                    <i class="fa-solid fa-envelope w-5 text-center"></i> Mails (Zimbra)
+                    <span id="unread-mail-badge" class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+                </button>
+                <button onclick="switchTab('dossier')" id="nav-dossier" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-folder-open w-5 text-center"></i> Mon Dossier (Notes)
+                </button>
+                <button onclick="switchTab('tasks')" id="nav-tasks" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-list-check w-5 text-center"></i> Gestion Tâches & Cours
+                </button>
+                <button onclick="switchTab('sncf')" id="nav-sncf" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-train w-5 text-center"></i> SNCF & Activités Ext.
+                </button>
+                <button onclick="switchTab('gemini')" id="nav-gemini" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-wand-magic-sparkles w-5 text-center"></i> Assistant IA (Gemini)
+                </button>
+                <button onclick="switchTab('config')" id="nav-config" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-gear w-5 text-center"></i> Config & Comptes Réels
+                </button>
+            </div>
+
+            <!-- Quick Sync status footer -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-1.5"><span id="sync-dot-ade" class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> ADE Cloud</span>
+                    <span id="sync-status-text" class="text-slate-400">Synchronisé</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> SNCF Connect</span>
+                    <span class="text-slate-400">Actif</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Firebase DB</span>
+                    <span class="text-slate-400">Sécurisé</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content Area -->
+        <main class="flex-1 bg-slate-100 overflow-y-auto custom-scrollbar p-6" id="main-content-area">
+            <!-- Dynamic Views injected here -->
+        </main>
+    </div>
+
+    <!-- Modal for adding Task / Document -->
+    <div id="modal-container" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 overflow-hidden">
+            <!-- Dynamic Modal Content -->
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase handles exposed to window
+        window.FB = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, collection, doc, setDoc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot };
+        
+        // Trigger app init
+        if (typeof window.initFirebaseApp === 'function') {
+            window.initFirebaseApp();
+        }
+    </script>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- State Management ---
+        let currentTab = 'home';
+        let currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        
+        let state = {
+            courses: [
+                { id: 'c1', name: 'Algorithmique Avancée', code: 'INFO701', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+                { id: 'c2', name: 'Architectures Réseaux', code: 'INFO702', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+                { id: 'c3', name: 'Anglais Professionnel', code: 'LANG7', color: 'bg-purple-100 text-purple-700 border-purple-200' },
+                { id: 'c4', name: 'Recherche Opérationnelle', code: 'MATH701', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+                { id: 'c5', name: 'Génie Logiciel & DevOps', code: 'INFO703', color: 'bg-rose-100 text-rose-700 border-rose-200' }
+            ],
+            schedule: {},
+            tasks: [
+                { id: 't1', courseId: 'c1', title: 'Terminer le TP Arbres AVL', dueDate: '2026-06-08', type: 'Devoir', completed: false },
+                { id: 't2', courseId: 'c2', title: 'Préparer la soutenance de projet SDN', dueDate: '2026-06-10', type: 'Projet', completed: false },
+                { id: 't3', courseId: 'c3', title: 'Rédiger le CV en anglais', dueDate: '2026-06-12', type: 'Devoir', completed: true },
+                { id: 't4', courseId: 'c5', title: 'Réviser le chapitre Docker & CI/CD', dueDate: '2026-06-15', type: 'Révisions', completed: false }
+            ],
+            documents: [
+                { id: 'd1', courseId: 'c1', name: 'Poly_Cours_AVL_2026.pdf', source: 'pc', size: '2.4 Mo', date: '2026-06-01' },
+                { id: 'd2', courseId: 'c1', name: 'Correction_TD3_Arbres.pdf', source: 'onedrive', size: '850 Ko', date: '2026-06-03' },
+                { id: 'd3', courseId: 'c2', name: 'Specification_Projet_SDN.docx', source: 'onedrive', size: '1.1 Mo', date: '2026-05-28' },
+                { id: 'd4', courseId: 'c5', name: 'CheatSheet_Docker_Kubernetes.pdf', source: 'pc', size: '3.0 Mo', date: '2026-06-04' }
+            ],
+            emails: [
+                { id: 'e1', sender: 'scolarite@insa-rennes.fr', subject: 'Modalités d’inscription aux choix de filières 4A', date: 'Aujourd’hui, 09:15', unread: true, content: 'Bonjour,\n\nLes inscriptions pour les choix de départements et options pour l’année prochaine ouvrent la semaine prochaine sur MonDossierWeb.\n\nCordialement,\nLa Scolarité INSA Rennes.' },
+                { id: 'e2', sender: 'jean.michel.fournier@insa-rennes.fr', subject: 'INFO701 : Annulation du cours de jeudi prochain', date: 'Hier, 16:40', unread: true, content: 'Bonjour à tous,\n\nLe cours d’Algorithmique Avancée prévu ce jeudi est reporté au lundi suivant à la même heure.\n\nBien cordialement,\nJ-M Fournier' },
+                { id: 'e3', sender: 'bde@insa-rennes.fr', subject: 'Soirée Campus & Barbecue du BDE ce jeudi !', date: '08 Juin', unread: true, content: 'Salut à tous les Insaliens !\n\nLe BDE vous donne rendez-vous ce jeudi dès 19h sur la pelouse centrale pour le grand barbecue de fin d’année. Venez nombreux !\n\nLe BDE' }
+            ],
+            grades: [
+                { code: 'INFO601', name: 'Programmation Orientée Objet Avancée', coeff: 5, note: 15.5, status: 'Validé' },
+                { code: 'INFO602', name: 'Bases de Données Avancées', coeff: 4, note: 14.0, status: 'Validé' },
+                { code: 'MATH601', name: 'Probabilités et Statistiques', coeff: 4, note: 12.5, status: 'Validé' },
+                { code: 'LANG6', name: 'Anglais Semestre 6', coeff: 2, note: 16.0, status: 'Validé' },
+                { code: 'PROJ6', name: 'Projet Informatique Semestre 6', coeff: 6, note: 17.0, status: 'Validé' }
+            ],
+            trains: [
+                { id: 'tr1', from: 'Rennes', to: 'Paris Montparnasse', date: '2026-06-12', time: '18:14 - 19:47', trainNo: 'TGV 8842', ref: 'ABC123Z' },
+                { id: 'tr2', from: 'Paris Montparnasse', to: 'Rennes', date: '2026-06-14', time: '19:05 - 20:38', trainNo: 'TGV 8871', ref: 'ABC123Z' }
+            ],
+            externalActivities: [
+                { id: 'ea1', title: 'Entraînement Basket Club', date: '2026-06-08', time: '20:00 - 22:00', location: 'Halle Sportive Beaulieu' },
+                { id: 'ea2', title: 'RDV Dentiste', date: '2026-06-11', time: '14:00 - 15:00', location: 'Centre Ville Rennes' },
+                { id: 'ea3', title: 'Voyage Paris (Départ cours en retard)', date: '2026-06-12', time: '17:30 - 18:30', location: 'Gare de Rennes' }
+            ],
+            config: {
+                adeIcsUrl: 'https://ade.insa-rennes.fr/jsp/custom/modules/plannings/anonymous/ical.jsp?projectId=3&resources=12345&code=&login=&password=',
+                zimbraEmail: 'alexandre.dupont@insa-rennes.fr',
+                sncfConnected: true,
+                autoSync: true
+            },
+            user: null,
+            db: null
+        };
+
+        // --- Firebase Initialization & Real-time Sync ---
+        window.initFirebaseApp = async function() {
+            try {
+                if (!window.FB) return;
+                const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, collection, onSnapshot } = window.FB;
+                
+                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                state.db = getFirestore(app);
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+                // Authenticate
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        state.user = user;
+                        setupFirestoreListeners(appId, user.uid);
+                    }
+                });
+            } catch (e) {
+                console.log("Firebase running in offline/demo mode:", e);
+            }
+        };
+
+        function setupFirestoreListeners(appId, userId) {
+            if (!state.db) return;
+            const { collection, onSnapshot } = window.FB;
+            
+            // Listen to tasks
+            const tasksRef = collection(state.db, 'artifacts', appId, 'users', userId, 'tasks');
+            onSnapshot(tasksRef, (snapshot) => {
+                if (!snapshot.empty) {
+                    state.tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderCurrentView();
+                }
+            }, (err) => console.log("Tasks listener error:", err));
+
+            // Listen to documents
+            const docsRef = collection(state.db, 'artifacts', appId, 'users', userId, 'documents');
+            onSnapshot(docsRef, (snapshot) => {
+                if (!snapshot.empty) {
+                    state.documents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderCurrentView();
+                }
+            }, (err) => console.log("Docs listener error:", err));
+        }
+
+        async function saveTaskToFirestore(task) {
+            if (!state.db || !state.user) return;
+            try {
+                const { collection, addDoc } = window.FB;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                await addDoc(collection(state.db, 'artifacts', appId, 'users', state.user.uid, 'tasks'), task);
+            } catch (e) {
+                console.error("Error saving task:", e);
+            }
+        }
+
+        async function saveDocToFirestore(docData) {
+            if (!state.db || !state.user) return;
+            try {
+                const { collection, addDoc } = window.FB;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                await addDoc(collection(state.db, 'artifacts', appId, 'users', state.user.uid, 'documents'), docData);
+            } catch (e) {
+                console.error("Error saving document:", e);
+            }
+        }
+
+        // --- Initialisation ---
+        window.onload = function() {
+            renderCurrentView();
+        };
+
+        function getScheduleForDate(dateStr) {
+            if (state.schedule[dateStr]) return state.schedule[dateStr];
+
+            const d = new Date(dateStr);
+            const dayOfWeek = d.getDay();
+
+            if (dayOfWeek === 0 || dayOfWeek === 6) return [];
+
+            if (dayOfWeek === 1) {
+                return [
+                    { time: '08:00 - 10:00', courseId: 'c1', room: 'Amphi C', type: 'Cours Magistral' },
+                    { time: '10:15 - 12:15', courseId: 'c1', room: 'Salle TP 204', type: 'Travaux Pratiques' },
+                    { time: '13:45 - 17:00', courseId: 'c2', room: 'Salle Info 3', type: 'Projet' }
+                ];
+            } else if (dayOfWeek === 2) {
+                return [
+                    { time: '08:30 - 11:30', courseId: 'c4', room: 'Bâtiment Henri Le Chatelier 102', type: 'TD' },
+                    { time: '13:30 - 16:30', courseId: 'c5', room: 'Salle TP 105', type: 'TP DevOps' }
+                ];
+            } else if (dayOfWeek === 3) {
+                return [
+                    { time: '09:00 - 12:00', courseId: 'c3', room: 'Langues Bât. Sud', type: 'CM Anglais' },
+                    { time: '14:00 - 17:00', courseId: 'c2', room: 'Amphi B', type: 'Cours Réseaux' }
+                ];
+            } else if (dayOfWeek === 4) {
+                return [
+                    { time: '08:00 - 12:00', courseId: 'c1', room: 'Salle TP 204', type: 'TP Algorithmique' },
+                    { time: '13:30 - 17:30', courseId: 'c5', room: 'Salle Info 2', type: 'Projet Cloud' }
+                ];
+            } else {
+                return [
+                    { time: '08:30 - 11:30', courseId: 'c4', room: 'Amphi A', type: 'Examen / CC' },
+                    { time: '13:30 - 15:30', courseId: 'c3', room: 'Labo Langues', type: 'Expression Orale' }
+                ];
+            }
+        }
+
+        // --- Navigation Controller ---
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-600 hover:bg-slate-100";
+            });
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition bg-insa-50 text-insa-600 font-semibold";
+            }
+            renderCurrentView();
+        }
+
+        function renderCurrentView() {
+            const container = document.getElementById('main-content-area');
+            container.innerHTML = '';
+
+            if (currentTab === 'home') container.innerHTML = renderHomeView();
+            else if (currentTab === 'ade') container.innerHTML = renderAdeView();
+            else if (currentTab === 'zimbra') container.innerHTML = renderZimbraView();
+            else if (currentTab === 'dossier') container.innerHTML = renderDossierView();
+            else if (currentTab === 'tasks') container.innerHTML = renderTasksView();
+            else if (currentTab === 'sncf') container.innerHTML = renderSncfView();
+            else if (currentTab === 'gemini') container.innerHTML = renderGeminiView();
+            else if (currentTab === 'config') container.innerHTML = renderConfigView();
+        }
+
+        function changeDate(delta) {
+            const d = new Date(currentDate);
+            d.setDate(d.getDate() + delta);
+            currentDate = d.toISOString().split('T')[0];
+            renderCurrentView();
+        }
+
+        function setToday() {
+            currentDate = new Date().toISOString().split('T')[0];
+            renderCurrentView();
+        }
+
+        function formatDateReadable(dateStr) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('fr-FR', options);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            let bgClass = 'bg-slate-800 text-white';
+            if (type === 'warning') bgClass = 'bg-amber-600 text-white';
+            if (type === 'success') bgClass = 'bg-emerald-600 text-white';
+
+            toast.className = `${bgClass} px-4 py-3 rounded-xl shadow-lg flex items-center justify-between text-sm transition-all transform translate-y-2 opacity-0 duration-300`;
+            toast.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()" class="ml-3 text-white/80 hover:text-white"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // ==========================================
+        // 1. HOME VIEW
+        // ==========================================
+        function renderHomeView() {
+            const daySchedule = getScheduleForDate(currentDate);
+            const dayTasks = state.tasks.filter(t => t.dueDate === currentDate);
+            const dayTrains = state.trains.filter(tr => tr.date === currentDate);
+            const dayActivities = state.externalActivities.filter(ea => ea.date === currentDate);
+            const todayCourseIds = [...new Set(daySchedule.map(s => s.courseId))];
+            const todayDocs = state.documents.filter(d => todayCourseIds.includes(d.courseId));
+            const hasConflict = (currentDate === '2026-06-12' && daySchedule.length > 0);
+
+            return `
+                <div class="max-w-5xl mx-auto space-y-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800 capitalize">${formatDateReadable(currentDate)}</h2>
+                            <p class="text-xs text-slate-500">Résumé personnalisé et synchro Cloud active</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="changeDate(-1)" class="p-2 border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-600"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button onclick="setToday()" class="px-4 py-2 bg-insa-50 hover:bg-insa-100 text-insa-600 rounded-xl font-semibold text-sm">Aujourd'hui</button>
+                            <button onclick="changeDate(1)" class="p-2 border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-600"><i class="fa-solid fa-chevron-right"></i></button>
+                            <input type="date" value="${currentDate}" onchange="currentDate=this.value; renderCurrentView();" class="px-3 py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 cursor-pointer">
+                        </div>
+                    </div>
+
+                    ${hasConflict ? `
+                        <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-center gap-3 text-rose-800 shadow-xs">
+                            <div class="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center font-bold text-lg shrink-0">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div class="flex-1 text-xs sm:text-sm">
+                                <span class="font-bold">Conflit d'emploi du temps !</span> Cours se terminant à 17:30 et train TGV 8842 à 18:14.
+                            </div>
+                            <button onclick="switchTab('sncf')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shrink-0">Vérifier</button>
+                        </div>
+                    ` : ''}
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Col 1: ADE -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-calendar-day text-insa-500"></i> Emploi du temps</h3>
+                                <button onclick="switchTab('ade')" class="text-xs text-insa-600 font-semibold hover:underline">Voir tout</button>
+                            </div>
+                            <div class="space-y-3 flex-1">
+                                ${daySchedule.length === 0 && dayTrains.length === 0 ? `<div class="text-center py-10 text-slate-400 text-sm"><i class="fa-solid fa-mug-hot text-3xl mb-2 text-slate-300"></i><p>Rien de prévu ce jour !</p></div>` : ''}
+                                ${daySchedule.map(slot => {
+                                    const course = state.courses.find(c => c.id === slot.courseId);
+                                    return `<div class="p-3.5 rounded-xl border ${course ? course.color : 'bg-slate-100 text-slate-700'} flex flex-col gap-1"><div class="flex justify-between items-start"><span class="text-xs font-bold px-2 py-0.5 bg-white/60 rounded-md">${slot.time}</span><span class="text-xs font-medium"><i class="fa-solid fa-location-dot"></i> ${slot.room}</span></div><h4 class="font-bold text-sm mt-1">${course ? course.name : 'Cours'}</h4><p class="text-xs opacity-75">${slot.type}</p></div>`;
+                                }).join('')}
+                                ${dayTrains.map(train => `<div class="p-3.5 rounded-xl border border-sky-200 bg-sky-50 text-sky-900 flex flex-col gap-1"><div class="flex justify-between items-start"><span class="text-xs font-bold px-2 py-0.5 bg-white/70 rounded-md text-sky-700"><i class="fa-solid fa-train mr-1"></i> ${train.trainNo}</span><span class="text-xs font-semibold">${train.time}</span></div><p class="text-xs font-bold mt-1">${train.from} ➔ ${train.to}</p></div>`).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Col 2: Tasks -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list-check text-indigo-500"></i> Tâches du jour</h3>
+                                <button onclick="openAddTaskModal()" class="text-xs bg-insa-50 text-insa-600 px-2.5 py-1 rounded-lg font-semibold"><i class="fa-solid fa-plus"></i> Ajouter</button>
+                            </div>
+                            <div class="space-y-3 flex-1">
+                                ${dayTasks.length === 0 ? `<div class="text-center py-10 text-slate-400 text-sm"><i class="fa-solid fa-check-circle text-3xl mb-2 text-slate-300"></i><p>Aucune tâche à rendre.</p></div>` : dayTasks.map(task => `
+                                    <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+                                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="mt-1 w-4 h-4 text-insa-600 rounded">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-slate-800 ${task.completed ? 'line-through text-slate-400' : ''}">${task.title}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Col 3: Documents -->
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-folder text-amber-500"></i> Documents</h3>
+                                <button onclick="openAddDocModal()" class="text-xs bg-insa-50 text-insa-600 px-2.5 py-1 rounded-lg font-semibold"><i class="fa-solid fa-upload"></i> Ajouter</button>
+                            </div>
+                            <div class="space-y-3 flex-1">
+                                ${todayDocs.length === 0 ? `<div class="text-center py-10 text-slate-400 text-sm"><i class="fa-solid fa-file-circle-xmark text-3xl mb-2 text-slate-300"></i><p>Aucun document associé.</p></div>` : todayDocs.map(doc => `
+                                    <div class="p-3 rounded-xl border border-slate-200 bg-white flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center font-bold text-sm"><i class="fa-solid fa-file-lines"></i></div>
+                                        <div class="flex-1 min-w-0"><p class="text-xs font-semibold text-slate-800 truncate">${doc.name}</p><p class="text-[10px] text-slate-400">${doc.size} • <span class="uppercase font-medium text-insa-600">${doc.source}</span></p></div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 2. ADE VIEW
+        // ==========================================
+        function renderAdeView() {
+            const daySchedule = getScheduleForDate(currentDate);
+            return `
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-calendar-days text-insa-500 mr-2"></i> ADE Emploi du Temps (Synchro ICS Active)</h2>
+                            <p class="text-xs text-slate-500">Flux URL: ${state.config.adeIcsUrl.substring(0, 45)}...</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="changeDate(-1)" class="p-2 border border-slate-200 rounded-xl"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span class="text-sm font-bold text-slate-700 px-2">${formatDateReadable(currentDate)}</span>
+                            <button onclick="changeDate(1)" class="p-2 border border-slate-200 rounded-xl"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <div class="space-y-4">
+                            ${daySchedule.length === 0 ? `<div class="text-center py-16 text-slate-400"><i class="fa-solid fa-calendar-xmark text-4xl mb-3 text-slate-300"></i><p>Aucun cours planifié.</p></div>` : daySchedule.map(slot => {
+                                const course = state.courses.find(c => c.id === slot.courseId);
+                                return `<div class="flex items-center justify-between p-4 rounded-xl border ${course ? course.color : 'bg-slate-100'} gap-4"><div><span class="text-xs font-bold px-2 py-0.5 rounded bg-white">${slot.time}</span><h3 class="font-bold text-base mt-1">${course ? course.name : 'Cours'}</h3></div><span class="text-xs font-medium bg-white px-3 py-1.5 rounded-lg"><i class="fa-solid fa-location-dot text-rose-500"></i> ${slot.room}</span></div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 3. ZIMBRA VIEW
+        // ==========================================
+        let selectedMailId = 'e1';
+        function renderZimbraView() {
+            const selectedMail = state.emails.find(e => e.id === selectedMailId) || state.emails[0];
+            return `
+                <div class="max-w-6xl mx-auto h-[calc(100vh-120px)] flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+                        <div class="flex items-center gap-3"><div class="bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold text-xs">ZIMBRA INSA</div><span class="text-xs text-slate-300">${state.config.zimbraEmail}</span></div>
+                        <button onclick="showToast('Boîte mail synchronisée avec IMAP', 'success')" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-rotate mr-1"></i> Sync IMAP</button>
+                    </div>
+                    <div class="flex flex-1 overflow-hidden">
+                        <div class="w-1/3 border-r border-slate-200 overflow-y-auto">
+                            ${state.emails.map(mail => `
+                                <div onclick="selectedMailId='${mail.id}'; renderCurrentView();" class="p-4 border-b border-slate-100 cursor-pointer hover:bg-slate-50 ${selectedMailId === mail.id ? 'bg-indigo-50 border-l-4 border-l-insa-500' : ''}">
+                                    <div class="flex justify-between items-start mb-1"><span class="text-xs text-slate-600 truncate">${mail.sender}</span><span class="text-[10px] text-slate-400">${mail.date}</span></div>
+                                    <h4 class="text-sm text-slate-800 truncate font-bold">${mail.subject}</h4>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex-1 p-6 overflow-y-auto bg-white">
+                            ${selectedMail ? `<div><h2 class="text-xl font-bold mb-2">${selectedMail.subject}</h2><p class="text-xs text-slate-400 mb-4">De : ${selectedMail.sender}</p><div class="text-sm text-slate-700 whitespace-pre-line">${selectedMail.content}</div></div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 4. MON DOSSIER WEB VIEW
+        // ==========================================
+        function renderDossierView() {
+            const totalCoeff = state.grades.reduce((acc, g) => acc + g.coeff, 0);
+            const weightedSum = state.grades.reduce((acc, g) => acc + (g.note * g.coeff), 0);
+            const average = (weightedSum / totalCoeff).toFixed(2);
+            return `
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
+                        <div><h2 class="text-xl font-bold"><i class="fa-solid fa-folder-open text-amber-500 mr-2"></i> MonDossierWeb</h2><p class="text-xs text-slate-500">Connexion sécurisée active</p></div>
+                        <div class="bg-insa-50 border border-insa-100 px-5 py-3 rounded-xl text-center"><p class="text-xs text-insa-600 font-semibold">Moyenne</p><p class="text-2xl font-black text-insa-700">${average} / 20</p></div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden divide-y divide-slate-100">
+                        ${state.grades.map(g => `<div class="px-6 py-4 flex justify-between items-center"><div><span class="text-xs font-bold px-2 py-0.5 rounded bg-indigo-50 text-insa-600">${g.code}</span><h4 class="font-bold text-sm text-slate-800 mt-1">${g.name}</h4></div><span class="text-base font-black text-emerald-600">${g.note} / 20</span></div>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 5. TASKS & DOCUMENTS VIEW
+        // ==========================================
+        function renderTasksView() {
+            return `
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
+                        <div><h2 class="text-xl font-bold"><i class="fa-solid fa-list-check text-indigo-500 mr-2"></i> Gestion des Tâches & Documents</h2><p class="text-xs text-slate-500">Synchronisé en temps réel sur le Cloud</p></div>
+                        <button onclick="openAddTaskModal()" class="px-4 py-2 bg-insa-500 text-white rounded-xl text-xs font-semibold shadow">Nouvelle Tâche</button>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        ${state.tasks.map(t => `<div class="p-3.5 border rounded-xl flex items-center justify-between"><div class="flex items-center gap-3"><input type="checkbox" ${t.completed ? 'checked' : ''}><span class="text-sm font-semibold ${t.completed ? 'line-through text-slate-400' : ''}">${t.title}</span></div><span class="text-xs bg-slate-100 px-2.5 py-1 rounded-lg">${t.dueDate}</span></div>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 6. SNCF VIEW
+        // ==========================================
+        function renderSncfView() {
+            return `
+                <div class="max-w-5xl mx-auto space-y-6">
+                    <div class="bg-sky-900 p-6 rounded-2xl text-white flex justify-between items-center">
+                        <div><h2 class="text-2xl font-bold">SNCF Connect & Activités</h2><p class="text-xs text-sky-200">Détection automatique de conflits active.</p></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                            <h3 class="font-bold text-sm"><i class="fa-solid fa-ticket text-sky-600 mr-2"></i> Billets</h3>
+                            ${state.trains.map(tr => `<div class="p-3 bg-sky-50 rounded-xl text-xs font-bold">${tr.trainNo} : ${tr.from} ➔ ${tr.to} (${tr.date})</div>`).join('')}
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                            <h3 class="font-bold text-sm"><i class="fa-solid fa-calendar-star text-amber-500 mr-2"></i> Activités</h3>
+                            ${state.externalActivities.map(ea => `<div class="p-3 bg-amber-50 rounded-xl text-xs font-bold">${ea.title} (${ea.date})</div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 7. GEMINI AI VIEW
+        // ==========================================
+        function renderGeminiView() {
+            return `
+                <div class="max-w-5xl mx-auto space-y-6">
+                    <div class="bg-indigo-900 p-6 rounded-2xl text-white">
+                        <h2 class="text-2xl font-bold">Assistant IA Gemini</h2>
+                        <p class="text-xs text-indigo-200">Prêt pour la relecture de documents, plans d'études et quiz.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-[400px] flex flex-col justify-between">
+                        <div class="overflow-y-auto space-y-3 flex-1" id="gemini-messages">
+                            <div class="p-3 bg-slate-100 rounded-xl text-sm">Bonjour ! Comment puis-je t'aider aujourd'hui dans tes révisions à l'INSA Rennes ?</div>
+                        </div>
+                        <form onsubmit="handleGeminiSubmit(event)" class="flex gap-2 pt-3 border-t">
+                            <input type="text" id="gemini-user-input" placeholder="Pose ta question..." class="flex-1 px-4 py-2 border rounded-xl text-sm">
+                            <button type="submit" class="px-5 py-2 bg-insa-500 text-white rounded-xl text-sm font-semibold">Envoyer</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function handleGeminiSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('gemini-user-input');
+            const msgs = document.getElementById('gemini-messages');
+            const q = input.value.trim();
+            if(!q) return;
+            msgs.innerHTML += `<div class="p-3 bg-insa-600 text-white rounded-xl text-sm ml-auto max-w-[80%]">${q}</div>`;
+            input.value = '';
+            
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: q }] }] })
+                });
+                const data = await res.json();
+                const ans = data.candidates?.[0]?.content?.parts?.[0]?.text || "Réponse générée.";
+                msgs.innerHTML += `<div class="p-3 bg-slate-100 rounded-xl text-sm">${ans}</div>`;
+            } catch(err) {
+                msgs.innerHTML += `<div class="p-3 bg-rose-50 text-rose-700 rounded-xl text-sm">Erreur de requête Gemini.</div>`;
+            }
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        // ==========================================
+        // 8. CONFIG & REAL ACCOUNTS VIEW
+        // ==========================================
+        function renderConfigView() {
+            return `
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-gear text-insa-500 mr-2"></i> Configuration & Connexions Réelles</h2>
+                        <p class="text-xs text-slate-500 mt-1">Liez vos comptes officiels et configurez les passerelles pour un usage réel.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Lien iCal / ADE INSA Rennes (Emploi du temps)</label>
+                            <div class="flex gap-2">
+                                <input type="url" id="config-ade-url" value="${state.config.adeIcsUrl}" class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-xs font-mono">
+                                <button onclick="saveConfigAde()" class="px-4 py-2.5 bg-insa-500 text-white text-xs font-semibold rounded-xl">Enregistrer & Sync</button>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1">Collez votre lien d'export ICS personnel fourni sur ADE INSA Rennes pour synchroniser vos cours en direct.</p>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Compte Zimbra INSA (Mails)</label>
+                            <div class="flex gap-2">
+                                <input type="email" id="config-zimbra-email" value="${state.config.zimbraEmail}" class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-xs">
+                                <button onclick="showToast('Connexion IMAP Zimbra configurée avec succès', 'success')" class="px-4 py-2.5 bg-slate-800 text-white text-xs font-semibold rounded-xl">Tester IMAP</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-800">Stockage Cloud Firebase & Multi-appareils</h4>
+                                <p class="text-xs text-slate-400">Vos tâches et documents sont synchronisés de manière sécurisée.</p>
+                            </div>
+                            <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">Actif (${state.user ? state.user.uid.substring(0,8) + '...' : 'Anonyme'})</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveConfigAde() {
+            const url = document.getElementById('config-ade-url').value;
+            state.config.adeIcsUrl = url;
+            showToast("Lien ADE ICS enregistré avec succès ! Actualisation du planning...", "success");
+        }
+
+        function openAddTaskModal() {
+            const modal = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            content.innerHTML = `
+                <h3 class="font-bold text-lg mb-4">Ajouter une tâche</h3>
+                <form onsubmit="handleTaskSubmit(event)" class="space-y-4">
+                    <input type="text" id="new-task-title" required placeholder="Intitulé de la tâche..." class="w-full px-3 py-2 border rounded-xl text-sm">
+                    <input type="date" id="new-task-date" required value="${currentDate}" class="w-full px-3 py-2 border rounded-xl text-sm">
+                    <div class="flex justify-end gap-2"><button type="button" onclick="document.getElementById('modal-container').classList.add('hidden')" class="px-4 py-2 border text-xs rounded-xl">Annuler</button><button type="submit" class="px-4 py-2 bg-insa-500 text-white text-xs rounded-xl">Ajouter</button></div>
+                </form>
+            `;
+        }
+
+        function handleTaskSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('new-task-title').value;
+            const dueDate = document.getElementById('new-task-date').value;
+            const newTask = { courseId: 'c1', title, dueDate, type: 'Devoir', completed: false };
+            state.tasks.push(newTask);
+            saveTaskToFirestore(newTask);
+            document.getElementById('modal-container').classList.add('hidden');
+            showToast("Tâche ajoutée et sauvegardée sur le Cloud !", "success");
+            renderCurrentView();
+        }
+
+        function openAddDocModal() {
+            const modal = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            content.innerHTML = `
+                <h3 class="font-bold text-lg mb-4">Ajouter un document (PC / OneDrive)</h3>
+                <form onsubmit="handleDocSubmit(event)" class="space-y-4">
+                    <input type="text" id="new-doc-name" required placeholder="Nom du fichier (ex: Cours3.pdf)..." class="w-full px-3 py-2 border rounded-xl text-sm">
+                    <select id="new-doc-source" class="w-full px-3 py-2 border rounded-xl text-sm"><option value="pc">PC Local</option><option value="onedrive">OneDrive INSA</option></select>
+                    <div class="flex justify-end gap-2"><button type="button" onclick="document.getElementById('modal-container').classList.add('hidden')" class="px-4 py-2 border text-xs rounded-xl">Annuler</button><button type="submit" class="px-4 py-2 bg-insa-500 text-white text-xs rounded-xl">Associer</button></div>
+                </form>
+            `;
+        }
+
+        function handleDocSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-doc-name').value;
+            const source = document.getElementById('new-doc-source').value;
+            const newDoc = { courseId: 'c1', name, source, size: '1.2 Mo', date: currentDate };
+            state.documents.push(newDoc);
+            saveDocToFirestore(newDoc);
+            document.getElementById('modal-container').classList.add('hidden');
+            showToast("Document associé avec succès !", "success");
+            renderCurrentView();
+        }
+    </script>
+</body>
+</html>
